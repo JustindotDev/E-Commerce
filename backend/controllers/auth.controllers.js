@@ -1,4 +1,5 @@
 import supabase from "../config/db.js";
+import { validatePassword } from "../util/password.validator.js";
 
 export const Signup = async (req, res) => {
   const { phone, email, password } = req.body;
@@ -37,6 +38,12 @@ export const Signup = async (req, res) => {
 
     if (!password) {
       return res.status(400).json({ message: "Missing required fields." });
+    }
+
+    // Validate password
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({ message: passwordValidation.message });
     }
 
     const { data: authData, error: signupError } = await supabase.auth.signUp({
