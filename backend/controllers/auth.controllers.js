@@ -1,5 +1,6 @@
 import supabase from "../config/db.js";
 import { validatePassword } from "../util/password.validator.js";
+import { setTokens } from "../util/setToken.js";
 
 export const Signup = async (req, res) => {
   const { phone, email, password } = req.body;
@@ -40,7 +41,6 @@ export const Signup = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields." });
     }
 
-    // Validate password
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.isValid) {
       return res.status(400).json({ message: passwordValidation.message });
@@ -90,9 +90,60 @@ export const Signup = async (req, res) => {
   }
 };
 
-export const Login = async () => {};
+export const Login = async (req, res) => {
+  const { email, password } = req.body;
 
-export const Logout = async () => {};
+  if (!email || !password) {
+    return res.status(400).json({ message: "Missing required fields." });
+  }
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      return res.status(401).json({ message: error.message });
+    }
+
+    setTokens(res, data.session);
+
+    return res.status(200).json({ message: "Login successful" });
+  } catch (error) {
+    console.error("Login error:", error.message);
+    res
+      .status(500)
+      .json({ message: "Something went wrong in login controller." });
+  }
+};
+
+export const Logout = async (req, res) => {
+  try {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      return res.status(401).json({ message: error.message });
+    }
+
+    res.clearCookie("access_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+    });
+    res.clearCookie("refresh_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+    });
+
+    return res.status(200).json({ message: "Logout Successfully!" });
+  } catch (error) {
+    console.error("Logout error:", error.message);
+    res
+      .status(500)
+      .json({ message: "Something went wrong in logout controller." });
+  }
+};
 
 export const Verify = (req, res) => {
   res.send(`
