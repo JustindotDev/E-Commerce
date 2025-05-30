@@ -162,3 +162,37 @@ export const Verify = (req, res) => {
     </html>
   `);
 };
+
+export const OAuthCallback = async (req, res) => {
+  const { access_token, refresh_token } = req.body;
+
+  if (!access_token || !refresh_token) {
+    return res.status(400).json({ message: "Missing tokens" });
+  }
+
+  try {
+    // Verify the tokens with Supabase
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser(access_token);
+
+    if (error || !user) {
+      return res.status(401).json({ message: "Invalid tokens" });
+    }
+
+    // Set the tokens in HTTP-only cookies
+    setTokens(res, { access_token, refresh_token });
+
+    return res.status(200).json({
+      message: "OAuth login successful",
+      user: {
+        id: user.id,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error("OAuth callback error:", error.message);
+    res.status(500).json({ message: "Something went wrong in OAuth callback" });
+  }
+};
