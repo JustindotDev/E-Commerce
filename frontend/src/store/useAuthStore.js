@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axiosInstance";
+import { supabase } from "../lib/supabaseClient.js";
 import toast from "react-hot-toast";
 
 export const useAuthStore = create((set) => ({
@@ -19,6 +20,18 @@ export const useAuthStore = create((set) => ({
       toast.error(error.response.data.message);
     } finally {
       set({ isSigningUp: false });
+    }
+  },
+
+  Oauth: async (provider) => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/home`,
+      },
+    });
+    if (error) {
+      toast.error(error.message);
     }
   },
 }));

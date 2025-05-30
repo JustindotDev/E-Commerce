@@ -13,7 +13,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import toast from "react-hot-toast";
 
 const SignupPage = () => {
-  const { signUp, isSigningUp } = useAuthStore();
+  const { signUp, isSigningUp, Oauth } = useAuthStore();
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -172,6 +172,7 @@ const SignupPage = () => {
                 borderColor: "gray",
                 textTransform: "none",
               }}
+              onClick={() => Oauth("google")}
             >
               Google
             </Button>
