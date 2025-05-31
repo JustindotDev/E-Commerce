@@ -13,13 +13,27 @@ export const useAuthStore = create((set) => ({
     set({ isSigningUp: true });
     try {
       const res = await axiosInstance.post("/auth/signup", data);
-      set({ authUser: res.data });
+      set({ authUser: res.data.user });
       toast.success(res.data.message);
     } catch (error) {
       console.error("Error caught:", error);
       toast.error(error.response.data.message);
     } finally {
       set({ isSigningUp: false });
+    }
+  },
+
+  logIn: async (data) => {
+    set({ isLoggingIn: true });
+    try {
+      const res = await axiosInstance.post("auth/login", data);
+      set({ authUser: res.data.user });
+      toast.success(res.message);
+    } catch (error) {
+      console.error("Error caught: ", error);
+      toast.error(error.response.data.message);
+    } finally {
+      set({ isLoggingIn: false });
     }
   },
 

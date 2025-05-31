@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { supabase } from "../lib/supabaseClient.js";
-// import { axiosInstance } from "../lib/axiosInstance";
+import { axiosInstance } from "../lib/axiosInstance";
 
 const HomePage = () => {
   useEffect(() => {
@@ -11,17 +11,22 @@ const HomePage = () => {
       } = await supabase.auth.getUser();
 
       if (error) {
-        console.log("User fetch erorr: ", error.message);
+        console.log("User fetch error: ", error.message);
         return;
       }
 
       if (user) {
-        console.log({ user });
-        // const {
-        //   data: { session },
-        // } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-        // await axiosInstance.post("/auth/oauth-callback", { user });
+        if (session) {
+          console.log("Session info: ", session);
+          await axiosInstance.post("/auth/oauth-callback", {
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+          });
+        }
       }
     };
     syncUser();
