@@ -181,7 +181,24 @@ export const OAuthCallback = async (req, res) => {
       return res.status(401).json({ message: "Invalid tokens" });
     }
 
-    // Set the tokens in HTTP-only cookies
+    const { data: userData } = await supabase
+      .from("users")
+      .select("*")
+      .eq("email", user.email)
+      .maybeSingle();
+
+    if (!userData) {
+      const { data, error } = await supabase
+        .from("users")
+        .upsert({
+          id: user.id,
+          username: user.user_metadata?.full_name,
+          email: user.email,
+          phone: user?.phone,
+        })
+        .select();
+    }
+
     setTokens(res, { access_token, refresh_token });
 
     return res.status(200).json({
