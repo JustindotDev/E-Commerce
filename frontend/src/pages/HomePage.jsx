@@ -4,6 +4,7 @@ import { axiosInstance } from "../lib/axiosInstance";
 
 const HomePage = () => {
   useEffect(() => {
+    // TODO: Need to remove the session token from the local storage.
     const syncUser = async () => {
       const {
         data: { user },
@@ -21,7 +22,6 @@ const HomePage = () => {
         } = await supabase.auth.getSession();
 
         if (session) {
-          console.log("Session info: ", session);
           await axiosInstance.post("/auth/oauth-callback", {
             access_token: session.access_token,
             refresh_token: session.refresh_token,
