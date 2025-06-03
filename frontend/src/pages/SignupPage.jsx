@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ecommerce from "../assets/E-Commerce.png";
 import {
   Box,
@@ -8,11 +9,13 @@ import {
   CardHeader,
   Divider,
   TextField,
+  Typography,
 } from "@mui/material";
 import { useAuthStore } from "../store/useAuthStore";
 import toast from "react-hot-toast";
 
 const SignupPage = () => {
+  const navigate = useNavigate();
   const { signUp, isSigningUp, Oauth } = useAuthStore();
 
   const [step, setStep] = useState(1);
@@ -83,7 +86,7 @@ const SignupPage = () => {
         <Card
           sx={{
             width: 400,
-            height: 500,
+            height: 400,
           }}
         >
           <CardContent
@@ -91,7 +94,7 @@ const SignupPage = () => {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 1,
+              gap: 2,
             }}
           >
             <CardHeader
@@ -169,7 +172,7 @@ const SignupPage = () => {
               sx={{
                 width: 350,
                 color: "black",
-                borderColor: "gray",
+                borderColor: "lightgray",
                 textTransform: "none",
               }}
               onClick={() => Oauth("google")}
@@ -191,12 +194,40 @@ const SignupPage = () => {
               sx={{
                 width: 350,
                 color: "black",
-                borderColor: "gray",
+                borderColor: "lightgray",
                 textTransform: "none",
               }}
             >
               Facebook
             </Button>
+            <Typography
+              variant="body2"
+              sx={{
+                marginTop: 1,
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+              }}
+            >
+              Have an account?
+              <Button
+                onClick={() => navigate("/login")}
+                sx={{
+                  color: "blue",
+                  textTransform: "none",
+                  padding: 0,
+                  minWidth: "auto",
+                  fontSize: "inherit",
+                  lineHeight: "inherit",
+                  "&:hover": {
+                    backgroundColor: "transparent",
+                    textDecoration: "underline",
+                  },
+                }}
+              >
+                Login
+              </Button>
+            </Typography>
           </CardContent>
         </Card>
       </div>
