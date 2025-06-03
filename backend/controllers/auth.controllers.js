@@ -91,6 +91,7 @@ export const Signup = async (req, res) => {
 };
 
 export const Login = async (req, res) => {
+  //TODO: add logic for the phone login
   const { email, password } = req.body;
 
   if (!email || !password) {
