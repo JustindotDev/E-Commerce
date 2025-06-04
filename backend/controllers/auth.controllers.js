@@ -92,16 +92,29 @@ export const Signup = async (req, res) => {
 
 export const Login = async (req, res) => {
   //TODO: add logic for the phone login
-  const { email, password } = req.body;
+  const { identifier, password } = req.body;
 
-  if (!email || !password) {
+  if (!identifier || !password) {
     return res.status(400).json({ message: "Missing required fields." });
   }
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    let data, error;
+
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+    const isPhone = /^\+\d{10,15}$/.test(identifier);
+    if (isEmail) {
+      ({ data, error } = await supabase.auth.signInWithPassword({
+        email: identifier,
+        password,
+      }));
+    } else if (isPhone) {
+      ({ data, error } = await supabase.auth.signInWithPassword({
+        phone: identifier,
+        password,
+      }));
+    } else {
+      return res.status(400).json({ message: "Invalid identifier format" });
+    }
 
     if (error) {
       return res.status(401).json({ message: error.message });

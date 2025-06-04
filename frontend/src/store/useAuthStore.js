@@ -9,12 +9,13 @@ export const useAuthStore = create((set) => ({
   isLoggingIn: false,
   isLoggingOut: false,
 
-  signUp: async (data) => {
+  signUp: async (data, navigate) => {
     set({ isSigningUp: true });
     try {
       const res = await axiosInstance.post("/auth/signup", data);
       set({ authUser: res.data.user });
       toast.success(res.data.message);
+      navigate("/home");
     } catch (error) {
       console.error("Error caught:", error);
       toast.error(error.response.data.message);
@@ -23,12 +24,13 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-  logIn: async (data) => {
+  logIn: async (data, navigate) => {
     set({ isLoggingIn: true });
     try {
       const res = await axiosInstance.post("auth/login", data);
       set({ authUser: res.data.user });
-      toast.success(res.message);
+      toast.success(res.data.message);
+      navigate("/home");
     } catch (error) {
       console.error("Error caught: ", error);
       toast.error(error.response.data.message);
