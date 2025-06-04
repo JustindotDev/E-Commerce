@@ -18,15 +18,14 @@ const LoginPage = () => {
   const { logIn, isLogginIn, Oauth } = useAuthStore();
 
   const [formData, setFormData] = useState({
-    phone: "",
-    email: "",
+    identifier: "",
     password: "",
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    logIn(formData);
+    logIn(formData, navigate);
   };
 
   return (
@@ -56,18 +55,13 @@ const LoginPage = () => {
             <TextField
               name="email"
               type="text"
-              value={formData.email || formData.phone}
+              value={formData.identifier}
               label="Email/Phone number"
               variant="outlined"
               sx={{ width: 350, alignSelf: "center" }}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (/^[^\s@]+@[^\s@]+\.(com)$/.test(value)) {
-                  setFormData({ ...formData, email: value, phone: "" });
-                } else {
-                  setFormData({ ...formData, phone: value, email: "" });
-                }
-              }}
+              onChange={(e) =>
+                setFormData({ ...formData, identifier: e.target.value })
+              }
             />
 
             <TextField
