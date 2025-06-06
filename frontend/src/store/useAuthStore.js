@@ -8,6 +8,9 @@ export const useAuthStore = create((set) => ({
   isSigningUp: false,
   isLoggingIn: false,
   isLoggingOut: false,
+  Error: "",
+  emailError: "",
+  passwordError: "",
 
   signUp: async (data, navigate) => {
     set({ isSigningUp: true });
@@ -18,7 +21,7 @@ export const useAuthStore = create((set) => ({
       navigate("/home");
     } catch (error) {
       console.error("Error caught:", error);
-      toast.error(error.response.data.message);
+      set({ Error: error.response.data.message });
     } finally {
       set({ isSigningUp: false });
     }
@@ -32,8 +35,12 @@ export const useAuthStore = create((set) => ({
       toast.success(res.data.message);
       navigate("/home");
     } catch (error) {
-      console.error("Error caught: ", error);
-      toast.error(error.response.data.message);
+      console.log("Error caught: ", error);
+      const errorData = error.response.data;
+      set({
+        emailError: errorData.emailError,
+        passwordError: errorData.passwordError,
+      });
     } finally {
       set({ isLoggingIn: false });
     }

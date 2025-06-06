@@ -94,8 +94,11 @@ export const Signup = async (req, res) => {
 export const Login = async (req, res) => {
   const { identifier, password } = req.body;
 
-  if (!identifier || !password) {
-    return res.status(400).json({ message: "Missing required fields." });
+  if (!identifier) {
+    return res.status(400).json({ emailError: "Missing required fields." });
+  }
+  if (!password) {
+    return res.status(400).json({ passwordError: "Missing required fields." });
   }
   try {
     let data, error;
@@ -103,21 +106,50 @@ export const Login = async (req, res) => {
     const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
     const isPhone = /^\+\d{10,15}$/.test(identifier);
     if (isEmail) {
+      // First check if the email exists
+      const { data: userData } = await supabase
+        .from("users")
+        .select("email")
+        .eq("email", identifier)
+        .single();
+
+      if (!userData) {
+        return res.status(401).json({
+          emailError: "Email not found",
+        });
+      }
+
+      // If email exists, try to login
       ({ data, error } = await supabase.auth.signInWithPassword({
         email: identifier,
         password,
       }));
+
+      if (error) {
+        if (error.message.includes("Invalid login credentials")) {
+          return res.status(401).json({
+            passwordError: "Incorrect password",
+          });
+        }
+        if (error.message.includes("Email not confirmed")) {
+          return res.status(401).json({
+            emailError: "Please verify your email address",
+          });
+        }
+        return res.status(401).json({
+          emailError: error.message,
+        });
+      }
     } else if (isPhone) {
       ({ data, error } = await supabase.auth.signInWithPassword({
         phone: identifier,
         password,
       }));
+      if (error) {
+        return res.status(401).json({ message: error.message });
+      }
     } else {
       return res.status(400).json({ message: "Invalid identifier format" });
-    }
-
-    if (error) {
-      return res.status(401).json({ message: error.message });
     }
 
     setTokens(res, data.session);

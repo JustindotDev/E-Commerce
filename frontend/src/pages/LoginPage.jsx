@@ -15,7 +15,8 @@ import ecommerce from "../assets/E-Commerce.png";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { logIn, isLogginIn, Oauth } = useAuthStore();
+  const { logIn, isLogginIn, Oauth, emailError, passwordError } =
+    useAuthStore();
 
   const [formData, setFormData] = useState({
     identifier: "",
@@ -35,7 +36,7 @@ const LoginPage = () => {
         <Card
           sx={{
             width: 400,
-            height: 500,
+            minHeight: 500,
           }}
         >
           <CardContent
@@ -53,6 +54,8 @@ const LoginPage = () => {
             />
 
             <TextField
+              error={emailError ? true : false}
+              helperText={emailError || ""}
               name="email"
               type="text"
               value={formData.identifier}
@@ -65,6 +68,8 @@ const LoginPage = () => {
             />
 
             <TextField
+              error={passwordError ? true : false}
+              helperText={passwordError || ""}
               name="password"
               type="password"
               value={formData.password}
