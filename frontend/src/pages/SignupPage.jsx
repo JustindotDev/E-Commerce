@@ -15,14 +15,14 @@ import {
   MenuItem,
 } from "@mui/material";
 import { useAuthStore } from "../store/useAuthStore";
-import toast from "react-hot-toast";
 import countryCodes from "../lib/country-code.json";
 
 const SignupPage = () => {
   const navigate = useNavigate();
-  const { signUp, isSigningUp, Oauth } = useAuthStore();
+  const { signUp, isSigningUp, Oauth, Error } = useAuthStore();
 
   const [step, setStep] = useState(1);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     countryCode: "+63",
     phone: "",
@@ -33,12 +33,12 @@ const SignupPage = () => {
   function handleValdation(formName) {
     if (formName === "phone") {
       if (!/^[1-9]\d{9,14}$/.test(formData.phone)) {
-        toast.error("Invalid phone number.");
+        setError("Invalid phone number.");
         return false;
       }
       const phoneNumber = formData.countryCode + formData.phone;
       if (!/^\+\d{10,15}$/.test(phoneNumber)) {
-        toast.error("Phone number too long.");
+        setError("Phone number too long.");
         return false;
       }
       return true;
@@ -46,7 +46,7 @@ const SignupPage = () => {
 
     if (formName === "email") {
       if (!/^[^\s@]+@[^\s@]+\.(com)$/.test(formData.email)) {
-        toast.error("Invalid email format.");
+        setError("Invalid email format.");
         return false;
       }
 
@@ -57,7 +57,7 @@ const SignupPage = () => {
   const handleNext = () => {
     if (step === 1) {
       if (!formData.phone || !formData.countryCode) {
-        return toast.error("Enter phone number.");
+        return setError("Enter phone number.");
       }
       const success = handleValdation("phone");
       if (success) {
@@ -67,7 +67,7 @@ const SignupPage = () => {
     }
     if (step === 2) {
       if (!formData.email) {
-        return toast.error("Enter email address.");
+        return setError("Enter email address.");
       }
       const success = handleValdation("email");
       if (success) {
@@ -76,7 +76,7 @@ const SignupPage = () => {
       return;
     }
     if (step === 3 && !formData.password) {
-      return toast.error("Enter passowrd.");
+      return setError("Enter password.");
     }
     if (step < 3) return setStep((prev) => prev + 1);
 
@@ -84,6 +84,7 @@ const SignupPage = () => {
   };
 
   const handleChange = (e) => {
+    setError("");
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
@@ -94,7 +95,7 @@ const SignupPage = () => {
         <Card
           sx={{
             width: 400,
-            height: 400,
+            minHeight: 400,
           }}
         >
           <CardContent
@@ -127,6 +128,8 @@ const SignupPage = () => {
                   </Select>
                 </FormControl>
                 <TextField
+                  error={error ? true : false}
+                  helperText={error || ""}
                   name="phone"
                   label="Phone Number"
                   variant="outlined"
@@ -139,6 +142,8 @@ const SignupPage = () => {
 
             {step === 2 && (
               <TextField
+                error={error || Error ? true : false}
+                helperText={error || Error || ""}
                 name="email"
                 type="email"
                 value={formData.email}
@@ -150,6 +155,8 @@ const SignupPage = () => {
             )}
             {step === 3 && (
               <TextField
+                error={error || Error ? true : false}
+                helperText={error || Error || ""}
                 name="password"
                 type="password"
                 value={formData.password}
