@@ -10,9 +10,13 @@ import {
   Divider,
   TextField,
   Typography,
+  Select,
+  FormControl,
+  MenuItem,
 } from "@mui/material";
 import { useAuthStore } from "../store/useAuthStore";
 import toast from "react-hot-toast";
+import countryCodes from "../lib/country-code.json";
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -20,6 +24,7 @@ const SignupPage = () => {
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
+    countryCode: "+63",
     phone: "",
     email: "",
     password: "",
@@ -27,10 +32,13 @@ const SignupPage = () => {
 
   function handleValdation(formName) {
     if (formName === "phone") {
-      if (!/^09\d{9}$/.test(formData.phone)) {
-        toast.error(
-          "Invalid phone number format. Must start with 09 and be 11 digits."
-        );
+      if (!/^[1-9]\d{9,14}$/.test(formData.phone)) {
+        toast.error("Invalid phone number.");
+        return false;
+      }
+      const phoneNumber = formData.countryCode + formData.phone;
+      if (!/^\+\d{10,15}$/.test(phoneNumber)) {
+        toast.error("Phone number too long.");
         return false;
       }
       return true;
@@ -48,7 +56,7 @@ const SignupPage = () => {
 
   const handleNext = () => {
     if (step === 1) {
-      if (!formData.phone) {
+      if (!formData.phone || !formData.countryCode) {
         return toast.error("Enter phone number.");
       }
       const success = handleValdation("phone");
@@ -72,7 +80,7 @@ const SignupPage = () => {
     }
     if (step < 3) return setStep((prev) => prev + 1);
 
-    signUp(formData);
+    signUp(formData, navigate);
   };
 
   const handleChange = (e) => {
@@ -103,14 +111,30 @@ const SignupPage = () => {
               titleTypographyProps={{ fontWeight: "bold", fontSize: 24 }}
             />
             {step === 1 && (
-              <TextField
-                name="phone"
-                label="Phone Number"
-                variant="outlined"
-                sx={{ width: 350, alignSelf: "center" }}
-                value={formData.phone}
-                onChange={handleChange}
-              />
+              <Box sx={{ display: "flex", width: 350 }}>
+                <FormControl sx={{ marginRight: 1, flexGrow: 1, maxWidth: 75 }}>
+                  <Select
+                    value={formData.countryCode}
+                    onChange={handleChange}
+                    autoWidth
+                    renderValue={(selected) => selected}
+                  >
+                    {countryCodes.map((country) => (
+                      <MenuItem key={country.code} value={country.code}>
+                        {country.code}({country.name})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <TextField
+                  name="phone"
+                  label="Phone Number"
+                  variant="outlined"
+                  sx={{ flexGrow: 1, alignSelf: "center" }}
+                  value={formData.phone}
+                  onChange={handleChange}
+                />
+              </Box>
             )}
 
             {step === 2 && (

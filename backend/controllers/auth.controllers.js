@@ -3,16 +3,17 @@ import { validatePassword } from "../util/password.validator.js";
 import { setTokens } from "../util/setToken.js";
 
 export const Signup = async (req, res) => {
-  const { phone, email, password } = req.body;
+  const { countryCode, phone, email, password } = req.body;
+  const phoneNumber = countryCode + phone;
   try {
-    if (!phone) {
+    if (!phoneNumber) {
       return res.status(400).json({ message: "Missing required fields." });
     }
 
     const { data: userPhone } = await supabase
       .from("users")
       .select("*")
-      .eq("phone", phone)
+      .eq("phone", phoneNumber)
       .single();
 
     if (userPhone) {
@@ -60,7 +61,7 @@ export const Signup = async (req, res) => {
     const { error: insertError } = await supabase.from("users").insert([
       {
         id: userId,
-        phone,
+        phone: phoneNumber,
         email,
       },
     ]);
@@ -78,7 +79,7 @@ export const Signup = async (req, res) => {
         "Signup successful. Please check your email to confirm your account.",
       user: {
         id: userId,
-        phone,
+        phone: phoneNumber,
         email,
       },
     });
@@ -91,7 +92,6 @@ export const Signup = async (req, res) => {
 };
 
 export const Login = async (req, res) => {
-  //TODO: add logic for the phone login
   const { identifier, password } = req.body;
 
   if (!identifier || !password) {
