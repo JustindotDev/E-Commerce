@@ -8,18 +8,17 @@ import {
   CardHeader,
   IconButton,
   TextField,
-  Snackbar,
-  Alert,
 } from "@mui/material";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 
 import { supabase } from "../lib/supabaseClient.js";
+import SnackBar from "../components/SnackBar";
 
 const PasswordReset = () => {
   const navigate = useNavigate();
+  const [error, setError] = useState(null);
   const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [showSnackbar, setShowSnackbar] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
   });
@@ -27,22 +26,26 @@ const PasswordReset = () => {
   const handleSend = async () => {
     if (!formData.email) {
       setError("Please enter your email address.");
-      setOpenSnackbar(true);
       return;
     }
-    const { error } = await supabase.auth.resetPasswordForEmail(
-      formData.email,
-      {
-        redirectTo: `${window.location.origin}/update-password`,
-      }
-    );
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        formData.email,
+        {
+          redirectTo: `${window.location.origin}/update-password`,
+        }
+      );
 
-    if (error) {
+      if (error) {
+        setError(error.message);
+      } else {
+        setMessage("Password reset email sent. Check your inbox.");
+        setShowSnackbar(true);
+      }
+    } catch (error) {
       setError(error.message);
-    } else {
-      setMessage("Password reset email sent. Check your inbox.");
+      setShowSnackbar(true);
     }
-    setOpenSnackbar(true);
   };
 
   return (
@@ -78,11 +81,16 @@ const PasswordReset = () => {
           </Box>
 
           <TextField
+            error={error ? true : false}
+            helperText={error || ""}
             placeholder="Enter your email address"
             type="email"
             value={formData.email}
             sx={{ width: "80%" }}
-            onChange={(e) => setFormData({ email: e.target.value })}
+            onChange={(e) => {
+              setError("");
+              setFormData({ email: e.target.value });
+            }}
           />
           <Button
             variant="contained"
@@ -93,19 +101,13 @@ const PasswordReset = () => {
           </Button>
         </CardContent>
       </Card>
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={5000}
-        onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
+      {showSnackbar && (
+        <SnackBar
+          message={error || message}
           severity={error ? "error" : "success"}
-          onClose={() => setOpenSnackbar(false)}
-        >
-          {error || message}
-        </Alert>
-      </Snackbar>
+          onClose={() => setShowSnackbar(false)}
+        />
+      )}
     </div>
   );
 };

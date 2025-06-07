@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
+import { useAuthStore } from "./store/useAuthStore";
+import SnackBar from "./components/SnackBar";
 
 import SignupPage from "./pages/SignupPage";
 import LoginPage from "./pages/LoginPage";
@@ -8,6 +9,8 @@ import PasswordReset from "./pages/PasswordReset";
 import UpdatePassword from "./pages/UpdatePassword";
 
 function App() {
+  const { snackbar, setSnackbar } = useAuthStore();
+
   return (
     <>
       <Routes>
@@ -17,12 +20,11 @@ function App() {
         <Route path="/reset-password" element={<PasswordReset />} />
         <Route path="/update-password" element={<UpdatePassword />} />
       </Routes>
-      <Toaster
-        toastOptions={{
-          style: {
-            fontFamily: "roboto",
-          },
-        }}
+      <SnackBar
+        open={snackbar.open}
+        message={snackbar.message}
+        severity={snackbar.severity}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
       />
     </>
   );

@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axiosInstance";
 import { supabase } from "../lib/supabaseClient.js";
-import toast from "react-hot-toast";
 
 export const useAuthStore = create((set) => ({
   authUser: null,
@@ -11,13 +10,26 @@ export const useAuthStore = create((set) => ({
   Error: "",
   emailError: "",
   passwordError: "",
+  snackbar: {
+    open: false,
+    message: "",
+    severity: "success",
+  },
+
+  setSnackbar: (snackbar) => set({ snackbar }),
 
   signUp: async (data, navigate) => {
     set({ isSigningUp: true });
     try {
       const res = await axiosInstance.post("/auth/signup", data);
       set({ authUser: res.data.user });
-      toast.success(res.data.message);
+      set({
+        snackbar: {
+          open: true,
+          message: res.data.message,
+          severity: "success",
+        },
+      });
       navigate("/home");
     } catch (error) {
       console.error("Error caught:", error);
@@ -32,7 +44,13 @@ export const useAuthStore = create((set) => ({
     try {
       const res = await axiosInstance.post("auth/login", data);
       set({ authUser: res.data.user });
-      toast.success(res.data.message);
+      set({
+        snackbar: {
+          open: true,
+          message: res.data.message,
+          severity: "success",
+        },
+      });
       navigate("/home");
     } catch (error) {
       console.log("Error caught: ", error);
@@ -54,7 +72,13 @@ export const useAuthStore = create((set) => ({
       },
     });
     if (error) {
-      toast.error(error.message);
+      set({
+        snackbar: {
+          open: true,
+          message: error.message,
+          severity: "error",
+        },
+      });
     }
   },
 }));
