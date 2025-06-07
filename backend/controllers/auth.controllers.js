@@ -154,7 +154,7 @@ export const Login = async (req, res) => {
 
     setTokens(res, data.session);
 
-    return res.status(200).json({ message: "Login successful" });
+    return res.status(200).json({ message: "Logged in Successfully!" });
   } catch (error) {
     console.error("Login error:", error.message);
     res
