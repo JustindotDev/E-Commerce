@@ -8,17 +8,21 @@ import {
   CardHeader,
   IconButton,
   TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 
 import { supabase } from "../lib/supabaseClient.js";
-import SnackBar from "../components/SnackBar";
 
 const PasswordReset = () => {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [message, setMessage] = useState("");
-  const [showSnackbar, setShowSnackbar] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
   });
@@ -40,12 +44,15 @@ const PasswordReset = () => {
         setError(error.message);
       } else {
         setMessage("Password reset email sent. Check your inbox.");
-        setShowSnackbar(true);
+        setOpenDialog(true);
       }
     } catch (error) {
       setError(error.message);
-      setShowSnackbar(true);
     }
+  };
+
+  const handleClose = () => {
+    setOpenDialog(false);
   };
 
   return (
@@ -101,13 +108,24 @@ const PasswordReset = () => {
           </Button>
         </CardContent>
       </Card>
-      {showSnackbar && (
-        <SnackBar
-          message={error || message}
-          severity={error ? "error" : "success"}
-          onClose={() => setShowSnackbar(false)}
-        />
-      )}
+      <Dialog
+        open={openDialog}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Sent!"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {message}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} autoFocus>
+            Proceed
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

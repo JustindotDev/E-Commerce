@@ -4,33 +4,37 @@ import { axiosInstance } from "../lib/axiosInstance";
 
 const HomePage = () => {
   useEffect(() => {
-    // TODO: Need to remove the session token from the local storage.
     const syncUser = async () => {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
-
-      if (error) {
-        console.log("User fetch error: ", error.message);
-        return;
-      }
-
-      if (user) {
+      try {
         const {
-          data: { session },
-        } = await supabase.auth.getSession();
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
 
-        if (session) {
-          await axiosInstance.post("/auth/oauth-callback", {
-            access_token: session.access_token,
-            refresh_token: session.refresh_token,
-          });
+        if (error) {
+          console.log("User fetch error: ", error.message);
+          return;
         }
+
+        if (user) {
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+
+          if (session) {
+            await axiosInstance.post("/auth/oauth-callback", {
+              access_token: session.access_token,
+              refresh_token: session.refresh_token,
+            });
+          }
+        }
+      } catch (err) {
+        console.log("Error syncing user:", err.message);
       }
     };
     syncUser();
-  });
+  }, []); // Only run once on mount
+
   return <div>HomePage</div>;
 };
 

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Box,
   Button,
   Card,
   CardContent,
@@ -9,32 +8,45 @@ import {
   TextField,
   Snackbar,
   Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import { supabase } from "../lib/supabaseClient";
+import { validatePassword } from "../lib/password-validator";
 
 const UpdatePassword = () => {
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
+  const [passwordMatchError, setPasswordMatchError] = useState("");
   const [error, setError] = useState("");
-  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
   const [formData, setFormData] = useState({
     password: "",
     confirmPassword: "",
   });
 
   const passwordValidation = () => {
+    const passwordValidator = validatePassword(formData.password);
     if (!formData.password || !formData.confirmPassword) {
-      setError("Please fill in both fields.");
-      setOpenSnackbar(true);
+      setError("Missing required fields.");
+
       return false;
     }
     if (formData.password !== formData.confirmPassword) {
-      setError("Password does not match.");
-      setOpenSnackbar(true);
+      setPasswordMatchError("Password does not match.");
       return false;
     }
+    if (!passwordValidator.isValid) {
+      setError(passwordValidator.message);
+      return false;
+    }
+
     return true;
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -50,20 +62,24 @@ const UpdatePassword = () => {
 
       if (error) {
         setError(error.message);
+      } else {
+        setMessage("All Set! Let’s Get You Logged In");
+        setOpenDialog(true);
       }
-
-      setMessage("Password updated successfully.");
-      setOpenSnackbar(true);
-
-      setTimeout(() => navigate("/login"), 2000);
     }
   };
+
+  const handleProceed = () => {
+    setOpenDialog(false);
+    navigate("/login");
+  };
+
   return (
     <div className="h-screen w-screen flex justify-center items-center">
       <Card
         sx={{
           width: 500,
-          height: 350,
+          minHeight: 350,
         }}
       >
         <CardContent
@@ -80,24 +96,32 @@ const UpdatePassword = () => {
           />
 
           <TextField
+            error={error ? true : false}
+            helperText={error || ""}
             label="New password"
             placeholder="Enter your new password"
             type="password"
             value={formData.password}
             sx={{ width: "80%" }}
-            onChange={(e) =>
-              setFormData({ ...formData, password: e.target.value })
-            }
+            onChange={(e) => {
+              setPasswordMatchError("");
+              setError("");
+              setFormData({ ...formData, password: e.target.value });
+            }}
           />
           <TextField
-            label="Confirm new password"
+            error={error || passwordMatchError ? true : false}
+            helperText={error || passwordMatchError || ""}
+            label="Confirm password"
             placeholder="Confirm your new password"
             type="password"
             value={formData.confirmPassword}
             sx={{ width: "80%" }}
-            onChange={(e) =>
-              setFormData({ ...formData, confirmPassword: e.target.value })
-            }
+            onChange={(e) => {
+              setPasswordMatchError("");
+              setError("");
+              setFormData({ ...formData, confirmPassword: e.target.value });
+            }}
           />
           <Button
             variant="contained"
@@ -108,19 +132,23 @@ const UpdatePassword = () => {
           </Button>
         </CardContent>
       </Card>
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={5000}
-        onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      <Dialog
+        open={openDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
       >
-        <Alert
-          severity={error ? "error" : "success"}
-          onClose={() => setOpenSnackbar(false)}
-        >
-          {error || message}
-        </Alert>
-      </Snackbar>
+        <DialogTitle id="alert-dialog-title">{"Password Changed!"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {message}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleProceed} autoFocus>
+            Proceed to Login
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
