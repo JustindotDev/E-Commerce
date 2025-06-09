@@ -6,19 +6,24 @@ import {
   CardContent,
   CardHeader,
   TextField,
-  Snackbar,
-  Alert,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { supabase } from "../lib/supabaseClient";
 import { validatePassword } from "../lib/password-validator";
 
 const UpdatePassword = () => {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [message, setMessage] = useState("");
   const [passwordMatchError, setPasswordMatchError] = useState("");
   const [error, setError] = useState("");
@@ -55,17 +60,24 @@ const UpdatePassword = () => {
 
     const success = passwordValidation();
 
-    if (success) {
-      const { error } = await supabase.auth.updateUser({
-        password: formData.password,
-      });
+    try {
+      setIsUpdating(true);
+      if (success) {
+        const { error } = await supabase.auth.updateUser({
+          password: formData.password,
+        });
 
-      if (error) {
-        setError(error.message);
-      } else {
-        setMessage("All Set! Let’s Get You Logged In");
-        setOpenDialog(true);
+        if (error) {
+          setError(error.message);
+        } else {
+          setMessage("All Set! Let’s Get You Logged In");
+          setOpenDialog(true);
+        }
       }
+    } catch (error) {
+      setError(error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -100,7 +112,7 @@ const UpdatePassword = () => {
             helperText={error || ""}
             label="New password"
             placeholder="Enter your new password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             value={formData.password}
             sx={{ width: "80%" }}
             onChange={(e) => {
@@ -108,13 +120,32 @@ const UpdatePassword = () => {
               setError("");
               setFormData({ ...formData, password: e.target.value });
             }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label={
+                      showPassword ? "hide password" : "show password"
+                    }
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    edge="end"
+                  >
+                    {showPassword ? (
+                      <VisibilityOffIcon sx={{ color: "lightgray" }} />
+                    ) : (
+                      <VisibilityIcon sx={{ color: "lightgray" }} />
+                    )}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
           <TextField
             error={error || passwordMatchError ? true : false}
             helperText={error || passwordMatchError || ""}
             label="Confirm password"
             placeholder="Confirm your new password"
-            type="password"
+            type={showConfirmPassword ? "text" : "password"}
             value={formData.confirmPassword}
             sx={{ width: "80%" }}
             onChange={(e) => {
@@ -122,8 +153,30 @@ const UpdatePassword = () => {
               setError("");
               setFormData({ ...formData, confirmPassword: e.target.value });
             }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label={
+                      showConfirmPassword ? "hide password" : "show password"
+                    }
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    edge="end"
+                  >
+                    {showConfirmPassword ? (
+                      <VisibilityOffIcon sx={{ color: "lightgray" }} />
+                    ) : (
+                      <VisibilityIcon sx={{ color: "lightgray" }} />
+                    )}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
           <Button
+            fullWidth
+            loading={isUpdating}
+            loadingPosition="start"
             variant="contained"
             sx={{ width: "80%", padding: 1 }}
             onClick={handleSubmit}

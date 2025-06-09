@@ -9,15 +9,20 @@ import {
   Typography,
   Button,
   Box,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useAuthStore } from "../store/useAuthStore";
 import ecommerce from "../assets/E-Commerce.png";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { logIn, isLogginIn, Oauth, emailError, passwordError } =
+  const { logIn, isLoggingIn, Oauth, emailError, passwordError } =
     useAuthStore();
 
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     identifier: "",
     password: "",
@@ -27,6 +32,12 @@ const LoginPage = () => {
     e.preventDefault();
 
     logIn(formData, navigate);
+  };
+
+  const handleOAuthLogin = (e) => {
+    e.preventDefault();
+
+    Oauth("google");
   };
 
   return (
@@ -71,7 +82,7 @@ const LoginPage = () => {
               error={passwordError ? true : false}
               helperText={passwordError || ""}
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={formData.password}
               label="Password"
               variant="outlined"
@@ -79,14 +90,36 @@ const LoginPage = () => {
               onChange={(e) => {
                 setFormData({ ...formData, password: e.target.value });
               }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={
+                        showPassword ? "hide password" : "show password"
+                      }
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      edge="end"
+                    >
+                      {showPassword ? (
+                        <VisibilityOffIcon sx={{ color: "lightgray" }} />
+                      ) : (
+                        <VisibilityIcon sx={{ color: "lightgray" }} />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
 
             <Button
+              fullWidth
+              loading={isLoggingIn}
+              loadingPosition="start"
               variant="contained"
               size="medium"
               sx={{ width: 350 }}
               onClick={handleSubmit}
-              disabled={isLogginIn}
+              disabled={isLoggingIn}
             >
               Log in
             </Button>
@@ -129,8 +162,6 @@ const LoginPage = () => {
               </Divider>
             </Box>
             <Button
-              component="label"
-              role={undefined}
               variant="outlined"
               tabIndex={-1}
               startIcon={
@@ -146,7 +177,7 @@ const LoginPage = () => {
                 borderColor: "lightgray",
                 textTransform: "none",
               }}
-              onClick={() => Oauth("google")}
+              onClick={handleOAuthLogin}
             >
               Google
             </Button>

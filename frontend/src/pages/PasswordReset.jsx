@@ -23,6 +23,7 @@ const PasswordReset = () => {
   const [error, setError] = useState(null);
   const [message, setMessage] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
   });
@@ -33,6 +34,7 @@ const PasswordReset = () => {
       return;
     }
     try {
+      setIsSending(true);
       const { error } = await supabase.auth.resetPasswordForEmail(
         formData.email,
         {
@@ -48,6 +50,8 @@ const PasswordReset = () => {
       }
     } catch (error) {
       setError(error.message);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -100,6 +104,9 @@ const PasswordReset = () => {
             }}
           />
           <Button
+            fullWidth
+            loading={isSending}
+            loadingPosition="start"
             variant="contained"
             sx={{ width: "80%", padding: 1 }}
             onClick={handleSend}
