@@ -13,7 +13,12 @@ import {
   Select,
   FormControl,
   MenuItem,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import { useAuthStore } from "../store/useAuthStore";
 import countryCodes from "../lib/country-code.json";
 
@@ -23,6 +28,7 @@ const SignupPage = () => {
 
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     countryCode: "+63",
     phone: "",
@@ -104,8 +110,18 @@ const SignupPage = () => {
               flexDirection: "column",
               alignItems: "center",
               gap: 2,
+              position: "relative",
             }}
           >
+            {step > 1 && (
+              <IconButton
+                disableRipple
+                onClick={() => setStep((prev) => prev - 1)}
+                sx={{ position: "absolute", left: 10, top: 20 }}
+              >
+                <KeyboardBackspaceIcon sx={{ color: "blue", fontSize: 32 }} />
+              </IconButton>
+            )}
             <CardHeader
               title="Sign Up"
               sx={{ textAlign: "center" }}
@@ -158,16 +174,38 @@ const SignupPage = () => {
                 error={error || Error ? true : false}
                 helperText={error || Error || ""}
                 name="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={formData.password}
                 label="Password"
                 variant="outlined"
                 sx={{ width: 350, alignSelf: "center" }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label={
+                          showPassword ? "hide password" : "show password"
+                        }
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        edge="end"
+                      >
+                        {showPassword ? (
+                          <VisibilityOffIcon sx={{ color: "lightgray" }} />
+                        ) : (
+                          <VisibilityIcon sx={{ color: "lightgray" }} />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
                 onChange={handleChange}
               />
             )}
 
             <Button
+              fullWidth
+              loading={isSigningUp}
+              loadingPosition="start"
               variant="contained"
               size="medium"
               sx={{ width: 350 }}
